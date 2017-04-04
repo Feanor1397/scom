@@ -27,3 +27,12 @@
 *.exe
 *.out
 *.app
+
+# YCM configs
+.ycm_extra_conf.py
+
+# Build scripts and dirs
+build
+build-debug.sh
+build-release.sh
+
