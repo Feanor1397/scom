@@ -1,5 +1,4 @@
-#ifndef SCOM_EXCEPTIONS_HPP
-#define SCOM_EXCEPTIONS_HPP
+#pragma once
 
 #include <cstdio>
 
@@ -19,5 +18,3 @@ namespace scom
       ConnectionClosed();
   };
 }
-
-#endif

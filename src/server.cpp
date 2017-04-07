@@ -4,6 +4,9 @@
 #include <cstring>
 #include <unistd.h>
 
+static bool server_up = false;
+static bool lock = false;
+
 scom::ServerSocket::ServerSocket(const char* port)
 {
   memset(&hints, 0, sizeof hints);
@@ -14,7 +17,9 @@ scom::ServerSocket::ServerSocket(const char* port)
   if((status = getaddrinfo(NULL, port, &hints, &ai)) != 0)
     throw scom::Exception(status);
 
-  if((i32SocketFD = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1)
+  if((i32SocketFD = socket(ai->ai_family,
+                           ai->ai_socktype,
+                           ai->ai_protocol)) == -1)
     throw scom::Exception(status);
 
   if((status = bind(i32SocketFD, ai->ai_addr, ai->ai_addrlen)) == -1)
@@ -73,7 +78,7 @@ void scom::ServerSocket::send(int connection, const char* message)
 {
   unsigned int total = 0;
   unsigned int len = strlen(message) + 1;
-  
+
   if(len > 1024)
     throw scom::Exception(status);
 
@@ -105,4 +110,93 @@ void scom::ServerSocket::send(int connection, const char* message)
 int scom::ServerSocket::listenerFD()
 {
   return i32SocketFD;
+}
+
+//
+//===========================================================================
+// End of Socket
+//===========================================================================
+//
+
+void *scom::Server::serverRoutine(void* _args)
+{
+  const scom::Args* args = (scom::Args*)_args;
+
+  fd_set master;
+  fd_set read_fds;
+  int fdmax;
+
+  FD_ZERO(&master);
+  FD_ZERO(&read_fds);
+
+  scom::ServerSocket* server = new scom::ServerSocket(args->port);
+
+  FD_SET(server->listenerFD(), &master);
+  fdmax = server->listenerFD();
+
+  server_up = true;
+
+  for(;;)
+  {
+    if(lock)
+      break;
+
+    read_fds = master;
+    if(select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1)
+      break;
+
+    for(int i = 0; i <= fdmax; i++)
+    {
+      if(FD_ISSET(i, &read_fds))
+      {
+        if(i == server->listenerFD())
+        {
+          int newfd = server->acceptConnection();
+          if(newfd == -1)
+            break;
+          else
+          {
+            FD_SET(newfd, &master);
+            if(newfd > fdmax)
+              fdmax = newfd;
+          }
+          args->ui->print("I: New connection");
+        }
+        else
+        {
+          try
+          {
+            const char* buff = server->recv(i);
+            args->ui->print(buff);
+          }
+          catch(scom::ConnectionClosed)
+          {
+            args->ui->print("I: Connection closed");
+            FD_CLR(i, &master);
+            close(i);
+          }
+        }
+      }
+    }
+  }
+  delete server;
+  pthread_exit(NULL);
+}
+
+scom::Server::Server(
+    const char* _host,
+    const char* _port,
+    scom::TextDuplex *_ui)
+{
+  args.host = _host;
+  args.port = _port;
+  args.ui = _ui;
+
+  pthread_create(&id, NULL, serverRoutine, (void*)&args);
+}
+
+scom::Server::~Server()
+{
+  lock = true;
+  pthread_join(id, NULL);
 }

@@ -1,5 +1,4 @@
-#ifndef SCOM_SERVER_HPP
-#define SCOM_SERVER_HPP
+#pragma once
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -7,8 +6,19 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include <ui.hpp>
+
+#include <pthread.h>
+
 namespace scom
 {
+  struct Args
+  {
+    const char* host;
+    const char* port;
+    scom::TextDuplex *ui;
+  };
+
   class ServerSocket
   {
     private:
@@ -26,6 +36,15 @@ namespace scom
       const char* recv(int connection);
       void disconnect(int connection);
   };
-}
 
-#endif
+  class Server
+  {
+    private:
+      struct scom::Args args;
+      static void *serverRoutine(void* _args);
+      pthread_t id;
+    public:
+      Server(const char* host, const char* port, scom::TextDuplex *ui);
+      virtual ~Server();
+  };
+}
