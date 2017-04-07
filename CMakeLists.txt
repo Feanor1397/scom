@@ -10,5 +10,12 @@ include_directories(
 
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} pthread)
+target_link_libraries(${PROJECT_NAME}
+  pthread
+  ncursesw
+  ncurses++w
+  formw
+  menuw
+  panelw
+  )
 
