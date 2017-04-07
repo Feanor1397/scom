@@ -36,3 +36,5 @@ build
 build-debug.sh
 build-release.sh
 
+# Backups lol
+*.bak

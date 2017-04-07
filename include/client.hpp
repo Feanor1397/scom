@@ -1,5 +1,4 @@
-#ifndef SCOM_CLIENT_HPP
-#define SCOM_CLIENT_HPP
+#pragma once
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -26,5 +25,3 @@ namespace scom
       char const* recv();
   };
 }
-
-#endif

@@ -4,7 +4,8 @@
 #include <cstring>
 #include <unistd.h>
 
-scom::ClientSocket::ClientSocket(const char* host, const char* port)
+scom::ClientSocket::ClientSocket(const char* host,
+                                 const char* port)
 {
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_INET;
@@ -14,7 +15,9 @@ scom::ClientSocket::ClientSocket(const char* host, const char* port)
   if((status = getaddrinfo(host, port, &hints, &ai)) != 0)
     throw scom::Exception(status);
 
-  if((i32SocketFD = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1)
+  if((i32SocketFD = socket(ai->ai_family,
+                           ai->ai_socktype,
+                           ai->ai_protocol)) == -1)
     throw scom::Exception(i32SocketFD);
 }
 
@@ -48,7 +51,7 @@ void scom::ClientSocket::send(const char* message)
 {
   unsigned int total = 0;
   unsigned int len = strlen(message) + 1;
-  
+
   if(len > 1024)
     throw scom::Exception(status);
 
