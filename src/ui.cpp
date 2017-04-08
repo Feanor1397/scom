@@ -27,7 +27,7 @@ scom::TextField::~TextField()
 const char* scom::TextField::read()
 {
   const char* to_ret;
-  field->getstr(buff);
+  field->getstr(buff, 1024);
   field->clear();
   to_ret = buff;
   return to_ret;

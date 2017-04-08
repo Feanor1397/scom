@@ -1,10 +1,13 @@
 #include <application.hpp>
 #include <iostream>
 #include <cstdlib>
+#include <locale.h>
 
 int main(int argc, char* argv[])
 {
   int res;
+
+  setlocale(LC_ALL, "");
 
   try
   {
