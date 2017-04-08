@@ -9,5 +9,5 @@ No history
 
 Just hardcore terminal with two fields (nope with three fields, dont know for what this left field i made)
 
-<img src="images/screen1.png" alt="Screenshot 1" align="left" />
+<img src="docs/assets/screenshot-1.png" alt="Screenshot 1" align="left" />
 
