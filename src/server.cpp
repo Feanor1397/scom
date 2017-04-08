@@ -126,7 +126,7 @@ int scom::ServerSocket::listenerFD()
 
 void *scom::Server::serverRoutine(void* _args)
 {
-  const scom::Args* args = (scom::Args*)_args;
+  const scom::ServArgs* args = (scom::ServArgs*)_args;
 
   fd_set master;
   fd_set read_fds;
@@ -166,20 +166,29 @@ void *scom::Server::serverRoutine(void* _args)
             if(newfd > fdmax)
               fdmax = newfd;
           }
-          args->ui->print("I: New connection");
         }
         else
         {
           try
           {
+            // new message. resend it to all clients
             const char* buff = server->recv(i);
-            args->ui->print(buff);
+            for(int j = 0; j <= fdmax; j++)
+            {
+              if(FD_ISSET(j, &master))
+              {
+                if(j != server->listenerFD() && j != i)
+                  server->send(j, buff);
+              }
+            }
           }
           catch(scom::ConnectionClosed)
           {
-            args->ui->print("I: Connection closed");
             FD_CLR(i, &master);
             close(i);
+          }
+          catch(scom::Exception)
+          {
           }
         }
       }
@@ -191,12 +200,10 @@ void *scom::Server::serverRoutine(void* _args)
 
 scom::Server::Server(
     const char* _host,
-    const char* _port,
-    scom::TextDuplex *_ui)
+    const char* _port)
 {
   args.host = _host;
   args.port = _port;
-  args.ui = _ui;
 
   pthread_create(&id, NULL, serverRoutine, (void*)&args);
 }
@@ -205,4 +212,9 @@ scom::Server::~Server()
 {
   lock = true;
   pthread_join(id, NULL);
+}
+
+bool scom::Server::serverUp()
+{
+  return server_up;
 }

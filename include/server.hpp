@@ -12,11 +12,10 @@
 
 namespace scom
 {
-  struct Args
+  struct ServArgs
   {
     const char* host;
     const char* port;
-    scom::TextDuplex *ui;
   };
 
   class ServerSocket
@@ -40,11 +39,12 @@ namespace scom
   class Server
   {
     private:
-      struct scom::Args args;
+      struct scom::ServArgs args;
       static void *serverRoutine(void* _args);
       pthread_t id;
     public:
-      Server(const char* host, const char* port, scom::TextDuplex *ui);
+      Server(const char* host, const char* port);
       virtual ~Server();
+      bool serverUp();
   };
 }

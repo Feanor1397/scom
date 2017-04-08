@@ -1,8 +1,14 @@
 #include <client.hpp>
 #include <exceptions.hpp>
+#include <ui.hpp>
+
+#include <pthread.h>
+
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
+
+static bool lock = false;
 
 //
 //===========================================================================
@@ -109,4 +115,85 @@ const char* scom::ClientSocket::recv()
   to_return = to_recv+2;
 
   return to_return;
+}
+
+int scom::ClientSocket::getFD()
+{
+  return i32SocketFD;
+}
+
+//
+//===========================================================================
+// Client class. Manages message fields, incloming msgs in separate tread
+//===========================================================================
+//
+
+void *scom::Client::clientRoutine(void* _args)
+{
+  scom::ClientArgs* args = (scom::ClientArgs*)_args;
+  scom::ClientSocket* clientSocket = args->sock;
+  scom::TextDuplex* ui = args->ui;
+
+  fd_set master;
+  fd_set read_fds;
+  int fdmax;
+
+  FD_ZERO(&master);
+  FD_ZERO(&read_fds);
+
+  FD_SET(clientSocket->getFD(), &master);
+  fdmax = clientSocket->getFD();
+
+  for(;;)
+  {
+    if(lock)
+      break;
+
+    read_fds = master;
+    if(select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1)
+      break;
+
+    try
+    {
+      const char* buff = clientSocket->recv();
+      ui->print(buff);
+    }
+    catch(scom::ConnectionClosed)
+    {
+      FD_CLR(fdmax, &master);
+      ui->print("Server closed connection");
+    }
+    catch(scom::Exception &e)
+    {
+      e.printInfo();
+      continue;
+    }
+  }
+
+  pthread_exit(NULL);
+}
+
+scom::Client::Client(const char* host, const char* port, scom::TextDuplex *ui)
+{
+  socket = new scom::ClientSocket(host, port);
+  args.sock = socket;
+  args.ui = ui;
+
+  pthread_create(&id, NULL, clientRoutine, (void*)&args);
+}
+
+scom::Client::~Client()
+{
+  lock = true;
+  pthread_join(id, NULL);
+}
+
+void scom::Client::send(const char* message)
+{
+  socket->send(message);
+}
+
+scom::ClientSocket* scom::Client::getSocket()
+{
+  return socket;
 }

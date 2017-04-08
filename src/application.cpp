@@ -1,14 +1,19 @@
 #include <cstdlib>
 #include <cstring>
+#include <unistd.h>
+
 #include <application.hpp>
 #include <exceptions.hpp>
 #include <server.hpp>
 #include <client.hpp>
+#include <ui.hpp>
 
 #include <cursesm.h>
 
-#include <ui.hpp>
 #define DEFAULT_PORT "11122"
+
+static bool with_server = false;
+static bool with_client = false;
 
 //
 //===========================================================================
@@ -24,10 +29,27 @@ scom::Application::Application()
 void scom::Application::handleArgs(int argc, char* argv[])
 {
   // default mode is local server with client
-  if(argc == 0)
+  if(argc == 1)
   {
     port = DEFAULT_PORT;
     host = "localhost";
+    with_server = with_client = true;
+  }
+  else if(argc == 2)
+  {
+    if((strcmp(argv[1], "--serveronly") == 0) ||
+       (strcmp(argv[1], "-s") == 0))
+    {
+      port = DEFAULT_PORT;
+      host = "localhost";
+      with_server = true;
+    }
+    else
+    {
+      port = DEFAULT_PORT;
+      host = argv[1];
+      with_client = true;
+    }
   }
 }
 
@@ -50,17 +72,50 @@ int scom::Application::run()
       16,
       6);
 
-  scom::Server *server = new scom::Server("localhost", DEFAULT_PORT, textFields);
+  scom::Server *server;
+  scom::Client *client;
+
+  if(with_server)
+  {
+    server = new scom::Server(
+        "localhost",
+        DEFAULT_PORT);
+  }
+
+  if(with_client)
+  {
+    client = new scom::Client(host, port, textFields);
+    if(with_server)
+    {
+      while(!server->serverUp())
+        sleep(1000);
+    }
+    client->getSocket()->connect();
+  }
 
   appstd->refresh();
   ::echo();
-  while(1)
+  while(with_client)
   {
     const char* msg = textFields->read();
     if(strcmp(msg, "ZZ") == 0)
+    {
+      delete client;
       break;
+    }
+    client->send(msg);
     textFields->print(msg);
   }
+  if(!with_client && with_server)
+  {
+    ::getch();
+    delete server;
+  }
+  else if(with_server)
+  {
+    delete server;
+  }
+
   delete menu;
   delete textFields;
   delete appstd;
