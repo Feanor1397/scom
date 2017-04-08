@@ -149,7 +149,7 @@ void *scom::Server::serverRoutine(void* _args)
     read_fds = master;
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = 500000;
+    tv.tv_usec = 100000;
     if(select(fdmax + 1, &read_fds, NULL, NULL, &tv) == -1)
       break;
 

@@ -153,7 +153,7 @@ void *scom::Client::clientRoutine(void* _args)
 
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = 500000;
+    tv.tv_usec = 50000;
     if(select(fdmax + 1, &read_fds, NULL, NULL, &tv) == -1)
       break;
 
@@ -209,7 +209,6 @@ scom::Client::Client(const char* host, const char* port)
 
 scom::Client::~Client()
 {
-  curs_set(1);
   lock = true;
   pthread_join(id, NULL);
   delete socket;

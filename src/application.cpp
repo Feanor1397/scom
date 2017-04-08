@@ -76,6 +76,8 @@ int scom::Application::run()
     client->getSocket()->connect();
 
     curs_set(0);
+    raw();
+
     bool exit = false;
     while(!exit)
     {
