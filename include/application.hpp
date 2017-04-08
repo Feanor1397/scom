@@ -12,6 +12,7 @@ namespace scom
       std::vector<const char*> args;
     protected:
       virtual int titlesize() const { return 1; }
+      void title();
     public:
       Application();
       virtual void handleArgs(int argc, char* argv[]);

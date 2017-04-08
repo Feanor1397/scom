@@ -53,6 +53,15 @@ void scom::Application::handleArgs(int argc, char* argv[])
   }
 }
 
+void scom::Application::title()
+{
+  const char* titleText = "SCOM";
+  const int titleLen = strlen(titleText);
+  titleWindow->bkgd(screen_titles());
+  titleWindow->addstr(0, (titleWindow->width() - titleLen) / 2, titleText);
+  titleWindow->noutrefresh();
+}
+
 int scom::Application::run()
 {
   scom::Server *server;
