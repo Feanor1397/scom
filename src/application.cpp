@@ -89,10 +89,13 @@ int scom::Application::run()
         case 'Z':
         {
           int ch2 = getch();
-          if((ch2 == 'Z') || (ch2 == 'Q'))
+          switch(ch2)
           {
-            delete client;
-            exit = true;
+            case 'Z':
+            case 'Q':
+              delete client;
+              exit = true;
+              break;
           }
           break;
         }
