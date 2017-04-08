@@ -55,23 +55,6 @@ void scom::Application::handleArgs(int argc, char* argv[])
 
 int scom::Application::run()
 {
-  NCursesPanel *appstd = new NCursesPanel();
-  appstd->box();
-
-  NCursesPanel *menu = new NCursesPanel(
-      appstd->height() - 2,
-      15,
-      1,
-      1);
-  menu->box();
-
-  scom::TextDuplex *textFields = new scom::TextDuplex(
-      appstd->height() - 2,
-      appstd->width() - 15 - 2,
-      1,
-      16,
-      6);
-
   scom::Server *server;
   scom::Client *client;
 
@@ -84,40 +67,19 @@ int scom::Application::run()
 
   if(with_client)
   {
-    client = new scom::Client(host, port, textFields);
+    client = new scom::Client(host, port);
     if(with_server)
     {
       while(!server->serverUp())
         sleep(1000);
     }
     client->getSocket()->connect();
-  }
 
-  appstd->refresh();
-  ::echo();
-  while(with_client)
-  {
-    const char* msg = textFields->read();
-    if(strcmp(msg, "ZZ") == 0)
+    while(true)
     {
-      delete client;
-      break;
+      client->send();
     }
-    client->send(msg);
-    textFields->print(msg);
-  }
-  if(!with_client && with_server)
-  {
-    ::getch();
-    delete server;
-  }
-  else if(with_server)
-  {
-    delete server;
   }
 
-  delete menu;
-  delete textFields;
-  delete appstd;
   return EXIT_SUCCESS;
 }

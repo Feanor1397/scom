@@ -41,10 +41,12 @@ namespace scom
       struct scom::ClientArgs args;
       static void *clientRoutine(void* args);
       pthread_t id;
+      NCursesPanel *appstd, *menu;
+      scom::TextDuplex *textFields;
     public:
-      Client(const char* host, const char* port, scom::TextDuplex *ui);
+      Client(const char* host, const char* port);
       virtual ~Client();
-      void send(const char* message);
+      void send();
       scom::ClientSocket* getSocket();
   };
 }

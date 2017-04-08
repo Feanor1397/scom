@@ -173,11 +173,30 @@ void *scom::Client::clientRoutine(void* _args)
   pthread_exit(NULL);
 }
 
-scom::Client::Client(const char* host, const char* port, scom::TextDuplex *ui)
+scom::Client::Client(const char* host, const char* port)
 {
+  appstd = new NCursesPanel();
+
+  menu = new NCursesPanel(
+      appstd->height(),
+      15,
+      0,
+      0);
+  menu->box();
+
+  textFields = new scom::TextDuplex(
+      appstd->height(),
+      appstd->width() - 15,
+      0,
+      15,
+      6);
+
+  appstd->refresh();
+  echo();
+
   socket = new scom::ClientSocket(host, port);
   args.sock = socket;
-  args.ui = ui;
+  args.ui = textFields;
 
   pthread_create(&id, NULL, clientRoutine, (void*)&args);
 }
@@ -188,8 +207,10 @@ scom::Client::~Client()
   pthread_join(id, NULL);
 }
 
-void scom::Client::send(const char* message)
+void scom::Client::send()
 {
+  const char* message = textFields->read();
+  textFields->print(message);
   socket->send(message);
 }
 
