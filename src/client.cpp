@@ -4,6 +4,12 @@
 #include <cstring>
 #include <unistd.h>
 
+//
+//===========================================================================
+// Client's socket
+//===========================================================================
+//
+
 scom::ClientSocket::ClientSocket(const char* host,
                                  const char* port)
 {

@@ -10,6 +10,12 @@
 #include <ui.hpp>
 #define DEFAULT_PORT "11122"
 
+//
+//===========================================================================
+// Main Application Class derived from ncurseses one
+//===========================================================================
+//
+
 scom::Application::Application()
 : NCursesApplication(false)
 {
@@ -17,6 +23,7 @@ scom::Application::Application()
 
 void scom::Application::handleArgs(int argc, char* argv[])
 {
+  // default mode is local server with client
   if(argc == 0)
   {
     port = DEFAULT_PORT;

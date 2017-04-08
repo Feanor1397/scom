@@ -7,6 +7,12 @@
 static bool server_up = false;
 static bool lock = false;
 
+//
+//===========================================================================
+// Server's socket
+//===========================================================================
+//
+
 scom::ServerSocket::ServerSocket(const char* port)
 {
   memset(&hints, 0, sizeof hints);
@@ -114,7 +120,7 @@ int scom::ServerSocket::listenerFD()
 
 //
 //===========================================================================
-// End of Socket
+// Server class. Each object is separate thread
 //===========================================================================
 //
 
