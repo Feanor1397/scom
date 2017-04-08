@@ -75,11 +75,38 @@ int scom::Application::run()
     }
     client->getSocket()->connect();
 
-    while(true)
+    curs_set(0);
+    bool exit = false;
+    while(!exit)
     {
-      client->send();
+      int ch = getch();
+      switch(ch)
+      {
+        case '\n':
+        case '\r':
+          client->send();
+          break;
+        case 'Z':
+        {
+          int ch2 = getch();
+          if((ch2 == 'Z') || (ch2 == 'Q'))
+          {
+            delete client;
+            exit = true;
+          }
+          break;
+        }
+        default:
+          break;
+      }
     }
   }
+
+  if(with_server && !with_client)
+    getch();
+
+  if(with_server)
+    delete server;
 
   return EXIT_SUCCESS;
 }

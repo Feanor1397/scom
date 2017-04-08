@@ -12,6 +12,8 @@
 
 namespace scom
 {
+  static bool serverLock = false;
+
   struct ServArgs
   {
     const char* host;

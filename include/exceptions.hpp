@@ -10,6 +10,7 @@ namespace scom
       int retValue;
     public:
       Exception(const int _retValue);
+      Exception();
       virtual void printInfo();
   };
   class ConnectionClosed : public Exception
@@ -17,4 +18,11 @@ namespace scom
     public:
       ConnectionClosed();
   };
+  class GetAddrInfo : public Exception{};
+  class CreateSocket : public Exception{};
+  class Bind : public Exception{};
+  class Listen : public Exception{};
+  class Accept : public Exception{};
+  class Recv : public Exception{};
+  class Send : public Exception{};
 }

@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 static bool server_up = false;
-static bool lock = false;
 
 //
 //===========================================================================
@@ -21,18 +20,18 @@ scom::ServerSocket::ServerSocket(const char* port)
   hints.ai_flags = AI_PASSIVE;
 
   if((status = getaddrinfo(NULL, port, &hints, &ai)) != 0)
-    throw scom::Exception(status);
+    throw scom::GetAddrInfo();
 
   if((i32SocketFD = socket(ai->ai_family,
                            ai->ai_socktype,
                            ai->ai_protocol)) == -1)
-    throw scom::Exception(status);
+    throw scom::CreateSocket();
 
   if((status = bind(i32SocketFD, ai->ai_addr, ai->ai_addrlen)) == -1)
-    throw scom::Exception(status);
+    throw scom::Bind();
 
   if((status = listen(i32SocketFD, 10)) == -1)
-    throw scom::Exception(status);
+    throw scom::Listen();
 }
 
 scom::ServerSocket::~ServerSocket()
@@ -45,7 +44,7 @@ int scom::ServerSocket::acceptConnection()
 {
   int i32ConnectFD = ::accept(i32SocketFD, 0, 0);
   if(i32ConnectFD == -1)
-    throw scom::Exception(i32ConnectFD);
+    throw scom::Accept();
 
   return i32ConnectFD;
 }
@@ -63,7 +62,7 @@ const char* scom::ServerSocket::recv(int connection)
 
   status = ::recv(connection, to_recv, 2, 0);
   if(status == -1)
-    throw scom::Exception(status);
+    throw scom::Recv();
   else if(status == 0)
     throw scom::ConnectionClosed();
 
@@ -71,7 +70,7 @@ const char* scom::ServerSocket::recv(int connection)
 
   status = ::recv(connection, to_recv+2, len, 0);
   if(status == -1)
-    throw scom::Exception(status);
+    throw scom::Recv();
   else if(status == 0)
     throw scom::ConnectionClosed();
 
@@ -86,7 +85,7 @@ void scom::ServerSocket::send(int connection, const char* message)
   unsigned int len = strlen(message) + 1;
 
   if(len > 1024)
-    throw scom::Exception(status);
+    throw scom::Exception();
 
   unsigned int bytesleft = len + 2;
   unsigned int n;
@@ -110,7 +109,7 @@ void scom::ServerSocket::send(int connection, const char* message)
   }
 
   if(n == -1)
-    throw scom::Exception(n);
+    throw scom::Send();
 }
 
 int scom::ServerSocket::listenerFD()
@@ -144,11 +143,14 @@ void *scom::Server::serverRoutine(void* _args)
 
   for(;;)
   {
-    if(lock)
+    if(serverLock)
       break;
 
     read_fds = master;
-    if(select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1)
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 500000;
+    if(select(fdmax + 1, &read_fds, NULL, NULL, &tv) == -1)
       break;
 
     for(int i = 0; i <= fdmax; i++)
@@ -187,9 +189,6 @@ void *scom::Server::serverRoutine(void* _args)
             FD_CLR(i, &master);
             close(i);
           }
-          catch(scom::Exception)
-          {
-          }
         }
       }
     }
@@ -210,7 +209,7 @@ scom::Server::Server(
 
 scom::Server::~Server()
 {
-  lock = true;
+  serverLock = true;
   pthread_join(id, NULL);
 }
 

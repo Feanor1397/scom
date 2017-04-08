@@ -150,23 +150,30 @@ void *scom::Client::clientRoutine(void* _args)
       break;
 
     read_fds = master;
-    if(select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1)
+
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 500000;
+    if(select(fdmax + 1, &read_fds, NULL, NULL, &tv) == -1)
       break;
 
-    try
+    if(FD_ISSET(fdmax, &read_fds))
     {
-      const char* buff = clientSocket->recv();
-      ui->print(buff);
-    }
-    catch(scom::ConnectionClosed)
-    {
-      FD_CLR(fdmax, &master);
-      ui->print("Server closed connection");
-    }
-    catch(scom::Exception &e)
-    {
-      e.printInfo();
-      continue;
+      try
+      {
+        const char* buff = clientSocket->recv();
+        ui->print(buff);
+      }
+      catch(scom::ConnectionClosed)
+      {
+        FD_CLR(fdmax, &master);
+        ui->print("Server closed connection");
+      }
+      catch(scom::Exception &e)
+      {
+        e.printInfo();
+        continue;
+      }
     }
   }
 
@@ -192,7 +199,6 @@ scom::Client::Client(const char* host, const char* port)
       6);
 
   appstd->refresh();
-  echo();
 
   socket = new scom::ClientSocket(host, port);
   args.sock = socket;
@@ -203,15 +209,24 @@ scom::Client::Client(const char* host, const char* port)
 
 scom::Client::~Client()
 {
+  curs_set(1);
   lock = true;
   pthread_join(id, NULL);
+  delete socket;
+  delete menu;
+  delete textFields;
+  delete appstd;
 }
 
 void scom::Client::send()
 {
+  echo();
+  curs_set(1);
   const char* message = textFields->read();
   textFields->print(message);
   socket->send(message);
+  curs_set(0);
+  noecho();
 }
 
 scom::ClientSocket* scom::Client::getSocket()

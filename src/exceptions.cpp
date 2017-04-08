@@ -6,6 +6,11 @@ scom::Exception::Exception(const int _retValue)
   retValue = _retValue;
 }
 
+scom::Exception::Exception()
+{
+  retValue = -1;
+}
+
 void scom::Exception::printInfo()
 {
   perror("Exception");
