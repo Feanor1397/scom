@@ -1,5 +1,7 @@
 ---
+layout: default
 title: Compiling from source
+permalink: /compiling/
 ---
 ## Download source code
 Firstly you need obtain source code. You can download zip and tar ball from
@@ -26,4 +28,4 @@ If you don't want use package manager than simply run
 
     sudo make install
 
-
+[Back to project page](/)
