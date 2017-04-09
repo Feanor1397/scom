@@ -28,4 +28,4 @@ If you don't want use package manager than simply run
 
     sudo make install
 
-[Back to project page](/)
+[Back to project page](/scom/)

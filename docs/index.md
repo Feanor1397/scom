@@ -8,7 +8,7 @@ asymmetric encryption and maybe something else
 Feel free to fork it and make some improvements/changes.
 I will look at any changes as soon as come back to home.
 
-## [Instruction for compiling from source](/compiling/)
+### [Instruction for compiling from source](/scom/compiling/)
 
 ![Screenshot of client window](/assets/img/screenshot-1.png)
 
