@@ -37,19 +37,9 @@ void scom::Application::handleArgs(int argc, char* argv[])
   }
   else if(argc == 2)
   {
-    if((strcmp(argv[1], "--serveronly") == 0) ||
-       (strcmp(argv[1], "-s") == 0))
-    {
-      port = DEFAULT_PORT;
-      host = "localhost";
-      with_server = true;
-    }
-    else
-    {
       port = DEFAULT_PORT;
       host = argv[1];
       with_client = true;
-    }
   }
 }
 
@@ -69,9 +59,7 @@ int scom::Application::run()
 
   if(with_server)
   {
-    server = new scom::Server(
-        "localhost",
-        DEFAULT_PORT);
+    server = new scom::Server(DEFAULT_PORT);
   }
 
   if(with_client)
@@ -115,9 +103,6 @@ int scom::Application::run()
       }
     }
   }
-
-  if(with_server && !with_client)
-    getch();
 
   if(with_server)
     delete server;
