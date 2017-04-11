@@ -18,14 +18,19 @@ namespace scom
     private:
       scom::ClientSocket* socket;
       struct scom::ClientArgs args;
-      static void *clientRoutine(void* args);
-      pthread_t id;
       NCursesPanel *appstd, *menu;
       scom::TextDuplex *textFields;
+      pthread_t id;
+      int uid;
+
+      static void *clientRoutine(void* args);
+      void send(const char* message);
+      void send_im(int target_uid, const char* message);
+
     public:
       Client(const char* host, const char* port);
       virtual ~Client();
-      void send();
+      void user_input();
       scom::ClientSocket* getSocket();
   };
 }

@@ -1,18 +1,13 @@
 #include <client.hpp>
 #include <exceptions.hpp>
 #include <ui.hpp>
+#include <protocol.hpp>
 
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
 
 static bool lock = false;
-
-//
-//===========================================================================
-// Client class. Manages message fields, incloming msgs in separate tread
-//===========================================================================
-//
 
 void *scom::Client::clientRoutine(void* _args)
 {
@@ -47,12 +42,13 @@ void *scom::Client::clientRoutine(void* _args)
     {
       try
       {
-        const char* buff = clientSocket->recv();
-        ui->print(buff);
+        scom::message_s message = scom::parse_message(clientSocket->recv());
+        ui->print(message.message);
       }
       catch(scom::ConnectionClosed)
       {
         FD_CLR(fdmax, &master);
+        close(fdmax);
         ui->print("Server closed connection");
       }
       catch(scom::Exception &e)
@@ -103,15 +99,37 @@ scom::Client::~Client()
   delete appstd;
 }
 
-void scom::Client::send()
+void scom::Client::user_input()
 {
   echo();
   curs_set(1);
-  const char* message = textFields->read();
-  textFields->print(message);
-  socket->send(message);
+
+  const char* input = textFields->read();
+
+  if(input[0] == '/') /* special comands */
+  {
+  }
+  else /* normal message */
+  {
+    this->send(input);
+  }
+
   curs_set(0);
   noecho();
+}
+
+void scom::Client::send(const char* message)
+{
+  const char* msg;
+  msg = scom::create_message(uid, message);
+  socket->send(msg);
+}
+
+void scom::Client::send_im(int target_uid, const char* message)
+{
+  const char* msg;
+  msg = scom::create_im_message(uid, target_uid, message);
+  socket->send(msg);
 }
 
 scom::ClientSocket* scom::Client::getSocket()
