@@ -83,9 +83,25 @@ scom::Client::Client(const char* host, const char* port)
   appstd->refresh();
 
   socket = new scom::ClientSocket(host, port);
+  socket->connect();
+
+  /* wait for socket available to write */
+  fd_set set;
+  FD_ZERO(&set);
+  FD_SET(socket->getFD(), &set);
+  select(socket->getFD() + 1, NULL, &set, NULL, NULL);
+  const char* request = scom::create_auth_request("User");
+  socket->send(request);
+
+  /* wait for server's auth response */
+  fd_set response;
+  FD_ZERO(&response);
+  FD_SET(socket->getFD(), &response);
+  select(socket->getFD() + 1, &response, NULL, NULL, NULL);
+  uid = scom::get_uid_from_response(socket->recv());
+
   args.sock = socket;
   args.ui = textFields;
-
   pthread_create(&id, NULL, clientRoutine, (void*)&args);
 }
 
@@ -111,7 +127,7 @@ void scom::Client::user_input()
   }
   else /* normal message */
   {
-    this->send(input);
+    send(input);
   }
 
   curs_set(0);

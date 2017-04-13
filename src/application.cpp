@@ -64,13 +64,12 @@ int scom::Application::run()
 
   if(with_client)
   {
-    client = new scom::Client(host, port);
     if(with_server)
     {
       while(!server->serverUp())
         sleep(1000);
     }
-    client->getSocket()->connect();
+    client = new scom::Client(host, port);
 
     curs_set(0);
     raw();
@@ -83,7 +82,7 @@ int scom::Application::run()
       {
         case '\n':
         case '\r':
-          client->send();
+          client->user_input();
           break;
         case 'Z':
         {

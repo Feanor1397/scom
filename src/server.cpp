@@ -6,9 +6,37 @@
 
 static bool server_up = false;
 
+int scom::Server::find_free_place_for_user(
+    std::vector<struct scom::Server::userlist_s>* _userlist)
+{
+  int size = _userlist->size();
+  if(size == 0)
+    return 0;
+  else
+  {
+    for(int i = 0; i < size; i++)
+      if(_userlist->at(i).uid != i)
+        return i;
+    return size;
+  }
+}
+
+int scom::Server::new_user(const char* name,
+    std::vector<scom::Server::userlist_s>* userlist)
+{
+  struct userlist_s user;
+  int uid = find_free_place_for_user(userlist);
+  user.name = name;
+  user.uid = uid;
+  userlist->insert(userlist->begin() + uid, user);
+  return uid;
+}
+
 void *scom::Server::serverRoutine(void* _args)
 {
-  const char* port = (const char*)_args;
+  struct ServArgs* args = (ServArgs*)_args;
+  const char* port = args->port;
+  std::vector<struct scom::Server::userlist_s>* userlist = args->userlist;
 
   fd_set master;
   fd_set read_fds;
@@ -58,13 +86,25 @@ void *scom::Server::serverRoutine(void* _args)
           {
             // new message. resend it to all clients
             const char* buff = server->recv(i);
-            for(int j = 0; j <= fdmax; j++)
+            type_t type = scom::get_type(buff);
+            if(type == scom::NORMAL_MESSAGE)
             {
-              if(FD_ISSET(j, &master))
-              {
-                if(j != server->listenerFD() && j != i)
-                  server->send(j, buff);
-              }
+              for(int j = 0; j <= fdmax; j++)
+                if(FD_ISSET(j, &master))
+                  if(j != server->listenerFD() && j != i)
+                    server->send(j, buff);
+            }
+            else if(type == scom::IM_MESSAGE)
+            {
+              /* TODO */
+            }
+            else if(type == scom::AUTH_REQUEST)
+            {
+              const char* name = scom::get_name_from_request(buff);
+              int uid = scom::Server::new_user(name, userlist);
+              const char* resp = scom::create_auth_response(uid);
+              server->send(i, resp);
+              /* send userlist to all */
             }
           }
           catch(scom::ConnectionClosed)
@@ -83,7 +123,10 @@ void *scom::Server::serverRoutine(void* _args)
 scom::Server::Server(
     const char* _port)
 {
-  pthread_create(&id, NULL, serverRoutine, (void*)_port);
+  ServArgs args;
+  args.port = _port;
+  args.userlist = &userlist;
+  pthread_create(&id, NULL, serverRoutine, (void*)&args);
 }
 
 scom::Server::~Server()

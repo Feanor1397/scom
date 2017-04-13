@@ -10,7 +10,6 @@ scom::ClientSocket::ClientSocket(const char* host,
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = AI_PASSIVE;
 
   if((status = getaddrinfo(host, port, &hints, &ai)) != 0)
     throw scom::Exception(status);
@@ -50,7 +49,7 @@ void scom::ClientSocket::disconnect()
 void scom::ClientSocket::send(const char* message)
 {
   unsigned int total = 0;
-  unsigned int len = strlen(message) + 1;
+  unsigned int len = strlen(message);
 
   if(len > 1024)
     throw scom::Exception(status);
@@ -69,7 +68,7 @@ void scom::ClientSocket::send(const char* message)
 
   while(total < len + 2)
   {
-    n = ::send(i32SocketFD, to_send+total, bytesleft, 0);
+    n = ::send(i32SocketFD, to_send+total, bytesleft, MSG_NOSIGNAL);
     if(n == -1)
       break;
     total += n;

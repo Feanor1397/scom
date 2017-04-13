@@ -16,7 +16,7 @@ enum scom::type_t scom::get_type(const char* message)
   return (scom::type_t)result;
 }
 
-int get_sender_uid(const char* message)
+int scom::get_sender_uid(const char* message)
 {
   char buff[4];
   int result;
@@ -28,7 +28,7 @@ int get_sender_uid(const char* message)
   return result;
 }
 
-int get_receiver_uid(const char* message)
+int scom::get_receiver_uid(const char* message)
 {
   char buff[4];
   int result;
@@ -46,7 +46,7 @@ const char* scom::get_text(int skip, const char* message)
   const char* result;
 
   len = strlen(message) - skip;
-  char buff[len];
+  char* buff = new char[len];
   strncpy(buff, message + skip, len);
   result = buff;
 
@@ -67,6 +67,49 @@ struct scom::message_s scom::parse_message(const char* message)
   return msg;
 }
 
+const char* scom::create_auth_request(const char* name)
+{
+  const char* result;
+  int len;
+
+  len = strlen(name);
+  char* buff = new char[1 + len];
+  sprintf(buff, "%01d%s", AUTH_REQUEST, name);
+  result = buff;
+  return result;
+}
+
+const char* scom::create_auth_response(int uid)
+{
+  const char* result;
+  char* buff = new char[4];
+  sprintf(buff, "%01d%03d", CLIENT_USER_ID, uid);
+  result = buff;
+  return result;
+}
+
+const char* scom::get_name_from_request(const char* message)
+{
+  const char* result;
+  int len = strlen(message) - 1;
+  char* buff = new char[len];
+  strncpy(buff, message + 1, len);
+  result = buff;
+  return result;
+}
+
+int scom::get_uid_from_response(const char* message)
+{
+  int result;
+  char buff[4];
+
+  strncpy(buff, message + 1, 3);
+  buff[3] = '\0';
+  sscanf(buff, "%03d", &result);
+
+  return result;
+}
+
 const char* scom::create_message(int uid, const char* message)
 {
   int msg_len;
@@ -76,7 +119,7 @@ const char* scom::create_message(int uid, const char* message)
   msg_len = strlen(message);
   len = msg_len + 1 + 3;
 
-  char buff[len];
+  char* buff = new char[len];
   sprintf(buff, "%01d%03d%s", NORMAL_MESSAGE, uid, message);
   result = buff;
 
@@ -92,7 +135,7 @@ const char* scom::create_im_message(int uid, int target_uid, const char* message
   msg_len = strlen(message);
   len = msg_len + 1 + 3 + 3;
 
-  char buff[len];
+  char* buff = new char[len];
   sprintf(buff, "%01d%03d%03d%s", IM_MESSAGE, uid, target_uid, message);
   result = buff;
 
@@ -103,7 +146,7 @@ const char* scom::create_error_message(error_t type)
 {
   const char* result;
 
-  char buff[2];
+  char* buff = new char[2];
   sprintf(buff, "%01d%01d", ERROR, type);
   result = buff;
 
@@ -119,7 +162,7 @@ const char* scom::create_system_message(const char* message)
   msg_len = strlen(message);
   len = msg_len + 1;
 
-  char buff[len];
+  char* buff = new char[len];
   sprintf(buff, "%01d%s", SYSTEM_MESSAGE, message);
   result = buff;
 
