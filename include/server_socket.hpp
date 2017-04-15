@@ -14,7 +14,6 @@ namespace scom
       struct addrinfo hints, *ai;
       int i32SocketFD;
       int status;
-      char buff[256];
     protected:
     public:
       ServerSocket(const char* port);

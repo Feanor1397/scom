@@ -82,7 +82,7 @@ const char* scom::create_auth_request(const char* name)
 const char* scom::create_auth_response(int uid)
 {
   const char* result;
-  char* buff = new char[4];
+  char* buff = new char[5];
   sprintf(buff, "%01d%03d", CLIENT_USER_ID, uid);
   result = buff;
   return result;

@@ -38,6 +38,8 @@ void scom::ClientSocket::connect()
     }
     break;
   }
+  if(status == -1)
+    throw scom::Exception();
 }
 
 void scom::ClientSocket::disconnect()

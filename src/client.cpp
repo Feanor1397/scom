@@ -128,6 +128,7 @@ void scom::Client::user_input()
   else /* normal message */
   {
     send(input);
+    textFields->print(input);
   }
 
   curs_set(0);

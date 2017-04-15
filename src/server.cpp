@@ -82,10 +82,11 @@ void *scom::Server::serverRoutine(void* _args)
         }
         else
         {
+          const char* buff;
           try
           {
             // new message. resend it to all clients
-            const char* buff = server->recv(i);
+            buff = server->recv(i);
             type_t type = scom::get_type(buff);
             if(type == scom::NORMAL_MESSAGE)
             {
@@ -104,8 +105,11 @@ void *scom::Server::serverRoutine(void* _args)
               int uid = scom::Server::new_user(name, userlist);
               const char* resp = scom::create_auth_response(uid);
               server->send(i, resp);
+              delete[] name;
+              delete[] resp;
               /* send userlist to all */
             }
+            delete[] buff;
           }
           catch(scom::ConnectionClosed)
           {
@@ -117,16 +121,17 @@ void *scom::Server::serverRoutine(void* _args)
     }
   }
   delete server;
+  delete args;
   pthread_exit(NULL);
 }
 
 scom::Server::Server(
     const char* _port)
 {
-  ServArgs args;
-  args.port = _port;
-  args.userlist = &userlist;
-  pthread_create(&id, NULL, serverRoutine, (void*)&args);
+  ServArgs* args = new ServArgs;
+  args->port = _port;
+  args->userlist = &userlist;
+  pthread_create(&id, NULL, serverRoutine, (void*)args);
 }
 
 scom::Server::~Server()

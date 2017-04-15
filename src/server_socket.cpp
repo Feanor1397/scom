@@ -47,9 +47,9 @@ void scom::ServerSocket::disconnect(int connection)
 
 const char* scom::ServerSocket::recv(int connection)
 {
-  char to_recv[1024+2];
-  memset(to_recv, 0, 1024+2);
-  char* to_return;
+  char to_recv[256+2];
+  memset(to_recv, 0, 256+2);
+  char* to_return = new char[256];
 
   status = ::recv(connection, to_recv, 2, 0);
   if(status == -1)
@@ -65,7 +65,7 @@ const char* scom::ServerSocket::recv(int connection)
   else if(status == 0)
     throw scom::ConnectionClosed();
 
-  to_return = to_recv+2;
+  strcpy(to_return, to_recv+2);
 
   return to_return;
 }
@@ -75,13 +75,13 @@ void scom::ServerSocket::send(int connection, const char* message)
   unsigned int total = 0;
   unsigned int len = strlen(message) + 1;
 
-  if(len > 1024)
+  if(len > 256)
     throw scom::Exception();
 
   unsigned int bytesleft = len + 2;
   unsigned int n;
 
-  char to_send[len + 2];
+  char* to_send = new char[len + 2];
   memset(to_send, 0, len + 2);
 
   uint16_t nlen = htons(len);
@@ -98,6 +98,8 @@ void scom::ServerSocket::send(int connection, const char* message)
     total += n;
     bytesleft -= n;
   }
+
+  delete[] to_send;
 
   if(n == -1)
     throw scom::Send();

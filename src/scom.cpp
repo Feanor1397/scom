@@ -1,5 +1,6 @@
 #include <application.hpp>
 #include <server.hpp>
+#include <exceptions.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -55,6 +56,11 @@ int main(int argc, char* argv[])
     {
       endwin();
       std::cerr << "Exception: " << e.what() << std::endl;
+      res = EXIT_FAILURE;
+    }
+    catch(scom::Exception &e)
+    {
+      endwin();
       res = EXIT_FAILURE;
     }
   }
