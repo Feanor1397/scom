@@ -8,7 +8,7 @@ namespace scom
   {
     private:
       NCursesPanel *border, *field;
-      char buff[1024];
+      char buff[256];
       int _height, _width;
       int _y, _x;
     public:
@@ -26,7 +26,7 @@ namespace scom
     public:
       TextFrame(int height, int width, int y, int x);
       virtual ~TextFrame();
-      void print(const char* message);
+      void print(const char* name, const char* message);
   };
 
   class TextDuplex
@@ -40,7 +40,7 @@ namespace scom
     public:
       TextDuplex(int height, int width, int y, int x, int f_height);
       virtual ~TextDuplex();
-      void print(const char* message);
+      void print(const char* name, const char* message);
       const char* read();
   };
 

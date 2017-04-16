@@ -22,6 +22,7 @@ namespace scom
       scom::TextDuplex *textFields;
       pthread_t id;
       int uid;
+      const char* _user_name;
 
       static void *clientRoutine(void* args);
       void send(const char* message);

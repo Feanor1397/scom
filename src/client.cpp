@@ -43,13 +43,13 @@ void *scom::Client::clientRoutine(void* _args)
       try
       {
         scom::message_s message = scom::parse_message(clientSocket->recv());
-        ui->print(message.message);
+        ui->print("User" ,message.message);
       }
       catch(scom::ConnectionClosed)
       {
         FD_CLR(fdmax, &master);
         close(fdmax);
-        ui->print("Server closed connection");
+        ui->print("Server", "Server closed connection");
       }
       catch(scom::Exception &e)
       {
@@ -85,12 +85,14 @@ scom::Client::Client(const char* host, const char* port)
   socket = new scom::ClientSocket(host, port);
   socket->connect();
 
+  _user_name = "User007";
+
   /* wait for socket available to write */
   fd_set set;
   FD_ZERO(&set);
   FD_SET(socket->getFD(), &set);
   select(socket->getFD() + 1, NULL, &set, NULL, NULL);
-  const char* request = scom::create_auth_request("User");
+  const char* request = scom::create_auth_request(_user_name);
   socket->send(request);
 
   /* wait for server's auth response */
@@ -128,7 +130,7 @@ void scom::Client::user_input()
   else /* normal message */
   {
     send(input);
-    textFields->print(input);
+    textFields->print(_user_name, input);
   }
 
   curs_set(0);

@@ -1,4 +1,5 @@
 #include <ui.hpp>
+#include <cstring>
 
 //
 //==========================================================================
@@ -27,7 +28,7 @@ scom::TextField::~TextField()
 const char* scom::TextField::read()
 {
   const char* to_ret;
-  field->getstr(buff, 1024);
+  field->getstr(buff, 256);
   field->clear();
   to_ret = buff;
   return to_ret;
@@ -57,8 +58,16 @@ scom::TextFrame::~TextFrame()
   delete border;
 }
 
-void scom::TextFrame::print(const char* message)
+void scom::TextFrame::print(const char* name, const char* message)
 {
+  const int max_name_len = 15;
+  int name_len = strlen(name);
+
+  field->addstr(name);
+
+  for(int i = 0; i < max_name_len - name_len; i++)
+    field->addch(' ');
+  field->addstr("| ");
   field->addstr(message);
   field->addch('\n');
   field->refresh();
@@ -95,9 +104,9 @@ scom::TextDuplex::~TextDuplex()
   delete frame;
 }
 
-void scom::TextDuplex::print(const char* message)
+void scom::TextDuplex::print(const char* name, const char* message)
 {
-  frame->print(message);
+  frame->print(name, message);
 }
 
 const char* scom::TextDuplex::read()

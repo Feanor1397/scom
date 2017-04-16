@@ -3,6 +3,7 @@
 #include <exceptions.hpp>
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
 
 static bool server_up = false;
 

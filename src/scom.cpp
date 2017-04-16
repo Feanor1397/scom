@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
     while(!exit)
     {
       char input[64];
+      std::cout << "> ";
       std::cin >> input;
       if(strcmp(input, "exit") == 0)
       {
